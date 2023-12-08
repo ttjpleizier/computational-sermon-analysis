@@ -79,4 +79,3 @@ plot_lambeth <- ggplot(predict_lambeth) +
   scale_x_continuous(breaks = c(1, seq(10,max(predict_lambeth$time),10))) +
   ylab("")
 
-plot_lambeth

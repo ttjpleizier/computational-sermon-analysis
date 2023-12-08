@@ -3,9 +3,10 @@ title: "Computational Sermon Analysis"
 author: "Theo Pleizier"
 date: "2023-12-15"
 output:
-  word_document: default
   html_document: default
+  word_document: default
 bibliography: "chapter-csa.bib"
+csl: "zeitschrift-fur-religionswissenschaft-note.csl"
 ---
 # 1 Introduction
 
