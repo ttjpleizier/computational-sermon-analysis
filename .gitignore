@@ -11,4 +11,7 @@
 !src/05-analysis-basic/**
 !src/06-analysis-advanced/**
 !src/07-report/**
+
+*.docx
+*.log
 .Rproj.user
