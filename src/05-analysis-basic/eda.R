@@ -20,7 +20,8 @@ spurgeon_chapters <- sort(table(str_remove(spurgeon_corpus$scripture,":.*$")),de
 top5_spurgeon_texts <- spurgeon_texts[spurgeon_texts > 4]
 top_spurgeon_chapters <- spurgeon_chapters[spurgeon_chapters > 19]
 
-data.frame(top_spurgeon_chapters)
+most_preached <- data.frame(top_spurgeon_chapters)
+names(most_preached) <- c("chapter","freq")
 
 # length of sermons over time
 
@@ -31,15 +32,11 @@ newman <- summary(newman_corpus, n = Inf)
 newman <- as_tibble(newman)
 newman$preacher <- "newman"
 
-newman %>% 
-  select(-preacher) %>% 
-  sample_n(5)
-
 spurgeon <- summary(spurgeon_corpus, n = Inf)
 spurgeon <- as_tibble(spurgeon)
 spurgeon$preacher <- "spurgeon"
 spurgeon$weekday <- !is.na(spurgeon$weekday) # dichotomized: T/F weekdays
-spurgeon$readonly <- !is.na(spurgeon$read) & is.na(spurgeon$year) # 63 preken die alleen gelezen zijn en niet gehouden
+spurgeon$readonly <- !is.na(spurgeon$read) & is.na(spurgeon$year) # 63 sermons only read, not delivered?
 
 
 
@@ -55,7 +52,6 @@ delivery_check <- spurgeon %>%
   select(Text) %>% .$Text
 
 save(delivery_check,file = here("gen/spurgeon","delivery_check"))
-delivery_check
 
 # 2308 sermons: either delivery or read date
 # 135 sermons: no delivery date, but with read date
@@ -130,7 +126,7 @@ spurgeon_small <- spurgeon %>%
 
 sermons <- bind_rows(newman_small,spurgeon_small)
 
-sermons %>% 
+plot_sermon_length <- sermons %>% 
   pivot_longer(cols = c("delivered","read"),
                names_to = "communication",
                values_to = "date",
@@ -152,39 +148,16 @@ table(newman$year)
 
 # lexical dispersion
 
-tokens_newman <- tokens(newman_corpus)
+term_newman <- c("church","world")
 
-term_newman <- "advent"
+set.seed(20231208)
+tokens_newman <- tokens(corpus_sample(newman_corpus, size = 5, replace = FALSE))
 
-dfm_newman <- dfm(tokens_select(tokens_compound(tokens_newman, 
-                                                list(c(as.character(tokens(term_newman))))),
-                                pattern = sub(" ","_",term_newman), 
-                                padding = TRUE))
+example_dispersion <- textplot_xray(kwic(tokens_newman, pattern = term_newman)) +
+  ggtitle(paste("Lexical disperson plot of <",paste0(term_newman, collapse = "|"),"> in Newman's sermons"))
 
-term2plot <- convert(dfm_newman, to = "data.frame") 
-names(term2plot) <- c("docid", "length", "frequency")
-term2plot$year <- newman$year
-term2plot <- arrange(term2plot, year)
 
-term2plot %>% 
-  filter(!is.na(year)) %>% 
-  dplyr::mutate(sermon = 1:n()) %>% 
-  ggplot(aes(x = sermon, y = .3, color = frequency)) +
-  geom_bar(stat = "identity") +
-  scale_color_gradient(high = "#000000", low = "#FFFFFF", 
-                       breaks = c(min(term2plot$frequency), max(term2plot$frequency)),
-                       label = c("Min", "Max")) +
-  #scale_x_continuous(breaks = c(seq(1,215,8),215), 
-  #                   labels = term2plot$year[c(seq(1,215,8),215)]) +
-  theme_classic() +
-  theme(legend.position = "bottom",
-        legend.title = element_blank(),
-        axis.line.y = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.text.x = element_text(angle = -90)) +
-  labs(y = NULL, x = NULL) + #"Sermons 1834-1843") +
-  ggtitle(paste0("Lexical dispersion of <", term_newman,"> in J.H. Newman's sermons"))
+
 
 # keyness
 
@@ -200,15 +173,14 @@ keyness_tokens <- tokens_compound(keyness_tokens, pattern = phrase(c("i am","jes
 
 keyness_dfm <- dfm_group(dfm(keyness_tokens), groups = preacher)
 
-keyness_spurgeon <- keyness_dfm %>% 
-  textstat_keyness(target = "spurgeon",
+keyness_newman <- keyness_dfm %>% 
+  textstat_keyness(target = "newman",
                    measure = "chi2")
 
-keyness_spurgeon %>% 
+example_keyness <- keyness_newman %>% 
   textplot_keyness(n = 20) +
   ggplot2::labs(x = "keyness (chi2)")
 
 
-# lexical diversity
 
 

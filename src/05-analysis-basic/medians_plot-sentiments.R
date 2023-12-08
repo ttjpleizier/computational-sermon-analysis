@@ -99,5 +99,5 @@ plot_least_similar <- df %>%
   labs(y = "sentiment.ai score", x = paste("lines of the sermon on",least_similar)) +
   theme(legend.position = "none")
 
-plot_least_similar
+
 
