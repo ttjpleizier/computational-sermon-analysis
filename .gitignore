@@ -1,0 +1,12 @@
+*
+
+!*/
+!.gitignore
+!data/*.csv
+!data/*.txt
+!src/01-fetch/**
+!src/02-process/**
+!src/03-clean/**
+!src/04-corpus/**
+!src/05-analysis-basic/**
+!src/06-analysis-advanced/**
