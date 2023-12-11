@@ -68,9 +68,5 @@ example_kwic <- tokens_subset(balanced_tokens, preacher == "newman") %>%
   kwic(pattern = phrase("God's grace")) %>% 
   sample_n(5)
 
-flextable::flextable(as.data.frame(example_kwic)) %>% 
-  flextable::delete_columns(j="pattern")
-
-library(flextable)
 
 
