@@ -14,13 +14,16 @@ library(quanteda.textstats)
 # load balanced corpus
 # check existence of file (pipeline)
 load(here("gen","balanced_texts_corpus"))
+load(here("gen","balanced_sample_corpus"))
+
+balanced_corpus <- balanced_texts
 
 # create token and dfm objects
-balanced_tokens <- tokens(balanced_texts, remove_punct = TRUE, remove_numbers = TRUE)
+balanced_tokens <- tokens(balanced_corpus, remove_punct = TRUE, remove_numbers = TRUE)
 balanced_dfm <- dfm(balanced_tokens)
 
 set.seed(20231130)
-example_dfm <- balanced_dfm[sample(1:length(balanced_texts),5),10:19]
+example_dfm <- balanced_dfm[sample(1:length(balanced_corpus),5),10:19]
 
 
 # calculate top_nr features, multiple combinations
@@ -41,6 +44,7 @@ top_words <- data.frame(all = names(balanced_topfeatures),
                         row.names = NULL)
 
 top_words
+
 
 
 # compounds 'st'
@@ -64,7 +68,9 @@ example_kwic <- tokens_subset(balanced_tokens, preacher == "newman") %>%
   kwic(pattern = phrase("God's grace")) %>% 
   sample_n(5)
 
+flextable::flextable(as.data.frame(example_kwic)) %>% 
+  flextable::delete_columns(j="pattern")
 
-
+library(flextable)
 
 

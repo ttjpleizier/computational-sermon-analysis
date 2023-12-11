@@ -2,6 +2,10 @@
 # Theo Pleizier, 11 december 2023
 # script belongs to project computational sermon analysis
 
+library(here)
+library(quanteda)
+
+
 load(here::here("gen","balanced_chapters_corpus"))
 load(here::here("gen","balanced_texts_corpus"))
 
@@ -25,4 +29,4 @@ overview_table <- tidyr::pivot_wider(overview_scripture,
                    id_cols = c(corpus,text),
                    names_from = preacher, values_from = volume_nr)
 
-write.csv(here("gen","list_chapters-texts.csv"), row.names = FALSE)
+write.csv(overview_table, here("data","list_chapters-texts.csv"), row.names = FALSE)

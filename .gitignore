@@ -1,8 +1,5 @@
 *
 
-*.log
-*.docx
-
 !*/
 !.gitignore
 !data/*.csv
@@ -15,3 +12,4 @@
 !src/06-analysis-advanced/**
 !src/07-report/**
 .Rproj.user
+
