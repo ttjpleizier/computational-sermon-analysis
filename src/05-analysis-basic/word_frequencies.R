@@ -15,11 +15,14 @@ library(quanteda.textstats)
 # check existence of file (pipeline)
 load(here("gen","balanced_texts_corpus"))
 load(here("gen","balanced_sample_corpus"))
+load(here("gen","newman_corpus"))
 
 balanced_corpus <- balanced_texts
 
 # create token and dfm objects
-balanced_tokens <- tokens(balanced_corpus, remove_punct = TRUE, remove_numbers = TRUE)
+balanced_tokens <- tokens(balanced_corpus, 
+                          remove_punct = TRUE, remove_numbers = TRUE)
+
 balanced_dfm <- dfm(balanced_tokens)
 
 set.seed(20231130)
@@ -49,24 +52,41 @@ top_words
 
 # compounds 'st'
 
-st_tokens <- tokens_compound(tokens_subset(balanced_tokens, preacher == "newman"), pattern = phrase(c("st *")))
+st_tokens <- tokens_compound(tokens_subset(balanced_tokens, preacher == "newman"), 
+                             pattern = phrase(c("st *")))
+st_s <- featnames(dfm_select(dfm(st_tokens), pattern = "st_.*'s$", valuetype = "regex"))
+st_no.s <- str_remove(st_s, "'s$") 
+st_tokens <- tokens_replace(st_tokens, pattern = st_s, replacement = st_no.s)
+
 st_freq <- textstat_frequency(dfm_keep(dfm(st_tokens), pattern = "st_*"))
 
 example_st <- head(st_freq, n = 5)
 
-
 # collocations god's
 
-newman_coll <- textstat_collocations(tokens_subset(balanced_tokens, preacher == "newman"), size = 2, min_count = 2)
+
+#newman_coll <- textstat_collocations(tokens_subset(balanced_tokens, preacher == "newman"), size = 2, min_count = 2)
+newman_tokens <- tokens(newman_corpus,
+                        remove_punct = TRUE,
+                        remove_numbers = TRUE,
+                        remove_symbols = TRUE) 
+
+newman_coll <- textstat_collocations(newman_tokens, size = 2, min_count = 2)
 newman_coll_str <- newman_coll[str_starts(newman_coll$collocation, "god's"),] 
 example_coll <- head(newman_coll_str[order(newman_coll_str$count, decreasing = TRUE),], 6)
+
+example_coll
 
 # keyword in context
 
 set.seed(20231130)
-example_kwic <- tokens_subset(balanced_tokens, preacher == "newman") %>% 
+#example_kwic <- tokens_subset(balanced_tokens, preacher == "newman") %>% 
+#  kwic(pattern = phrase("God's grace")) %>% 
+#  sample_n(5)
+
+example_kwic <- newman_tokens %>% 
   kwic(pattern = phrase("God's grace")) %>% 
   sample_n(5)
 
-
+example_kwic
 

@@ -1,0 +1,20 @@
+---
+title: "Selected Bibliography CSA"
+author: "Theo Pleizier"
+date: "2023-12-15"
+output:
+  bookdown::word_document2: 
+  global_numbering: TRUE
+bibliography: chapter-csa.bib
+csl: "zeitschrift-fur-religionswissenschaft-note.csl"
+nocite: |
+  @gries2016, @atteveldt2022, @agersnap2021a, @elwert2021, @khurana2023
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../../gen") })
+---
+
+<!--
+Er is multibib pandoc, via een luafilter. Maar nog niet helder hoe dat goed geinstalleerd kan worden...
+-->
+
+# Selected Bibliography {-}

@@ -58,6 +58,16 @@ medians_wide$newton_target <- medians_wide[[2]] - medians_wide[[3]]
 sample_medians <- medians_wide[medians_wide$bible %in% sample(medians_wide$bible, 5, replace = FALSE),1:3]
 sample_medians
 
+# top and tail of median
+
+toptail_medians <- rbind(slice_min(medians_wide, order_by = difference, n = 3),
+      slice_max(medians_wide, order_by = difference, n = 3)) %>% 
+  arrange(difference) %>% 
+  select(-newton_target)
+  
+toptail_medians
+
+
 # find the most and the least different sermons
 least_similar <- medians_wide$bible[medians_wide$difference == max(medians_wide$difference)]
 most_similar <- medians_wide$bible[medians_wide$difference == min(medians_wide$difference)]
@@ -94,10 +104,27 @@ plot_least_similar <- df %>%
   ggplot(aes(y = sentimentai, x = seg_id, 
              group = bible, fill = preacher)) +
   geom_col() +
+  scale_fill_manual(values = c("#606060","#606060")) +
   #facet_grid(vars(bible), vars(preacher), scales = "free_x") +
   facet_wrap(~ preacher, scales = "free_x", ncol = 1) +
-  labs(y = "sentiment.ai score", x = paste("lines of the sermon on",least_similar)) +
-  theme(legend.position = "none")
+  labs(y = "sentiment.ai score", 
+       x = "lines of the sermon") +
+  theme(legend.position = "none",
+        panel.background = element_blank())
 
+plot_least_similar 
 
+ggsave("plot_sentiments.tiff", 
+       plot = plot_least_similar, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 300)
+
+ggsave("plot_sentiments-s.tiff", 
+       plot = plot_least_similar, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 100)
 

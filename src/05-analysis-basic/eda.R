@@ -7,6 +7,7 @@ library(stringr)
 library(quanteda)
 library(quanteda.textplots)
 library(quanteda.textstats)
+library(tidyverse)
 
 load(here("gen","newman_corpus"))
 load(here("gen","spurgeon_corpus"))
@@ -25,8 +26,6 @@ names(most_preached) <- c("chapter","freq")
 
 # length of sermons over time
 
-library(tidyverse)
-
 # corpus to tibble
 newman <- summary(newman_corpus, n = Inf)
 newman <- as_tibble(newman)
@@ -37,8 +36,6 @@ spurgeon <- as_tibble(spurgeon)
 spurgeon$preacher <- "spurgeon"
 spurgeon$weekday <- !is.na(spurgeon$weekday) # dichotomized: T/F weekdays
 spurgeon$readonly <- !is.na(spurgeon$read) & is.na(spurgeon$year) # 63 sermons only read, not delivered?
-
-
 
 # explore dates spurgeon: read and/or delivered
 spurgeon %>% 
@@ -86,7 +83,6 @@ spurgeon <- filter(spurgeon, !is.na(delivered) | !is.na(read))
 
 # test hypothesis whether weekday sermons have different length!
 # spurgeon <- filter(spurgeon, sunday) # 2331 out of 3516 are sunday-sermons
-
 
 sermons <- select(spurgeon, preacher, Tokens, nr, delivered, read, weekday, readonly)
 
@@ -141,6 +137,20 @@ plot_sermon_length <- sermons %>%
   ylab("mean length in Tokens") +
   xlab("") 
 
+ggsave("plot_sermon_length.tiff", 
+       plot = plot_sermon_length, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 3,
+       dpi = 300)
+
+ggsave("plot_sermon_length-s.tiff", 
+       plot = plot_sermon_length, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 3,
+       dpi = 100)
+
 # 1834 increase in Newman: July 1833 return from tour Europe (Dec 1832); start Oxford movement?
 # 1891 decrease in Spurgeon: illness & death
 
@@ -154,10 +164,23 @@ set.seed(20231208)
 tokens_newman <- tokens(corpus_sample(newman_corpus, size = 5, replace = FALSE))
 
 example_dispersion <- textplot_xray(kwic(tokens_newman, pattern = term_newman)) +
-  ggtitle(paste("Lexical disperson plot of <",paste0(term_newman, collapse = "|"),"> in Newman's sermons"))
+  ggtitle(paste("Lexical dispersion of <",paste0(term_newman, collapse = "|"),"> in Newman's sermons")) +
+  #ggtitle("") +
+  ylab("")
 
+ggsave("plot_dispersion.tiff", 
+       plot = example_dispersion, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 300)
 
-
+ggsave("plot_dispersion-s.tiff", 
+       plot = example_dispersion, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 100)
 
 # keyness
 
@@ -178,9 +201,29 @@ keyness_newman <- keyness_dfm %>%
                    measure = "chi2")
 
 example_keyness <- keyness_newman %>% 
-  textplot_keyness(n = 20) +
-  ggplot2::labs(x = "keyness (chi2)")
+  textplot_keyness(n = 20,
+                   color = c("#808080","#D3D3D3")) +
+  ggplot2::labs(x = "keyness (chi2)") +
+  theme(
+    legend.position = c(.25, .95),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6)
+  )
 
+example_keyness
 
+ggsave("plot_keyness.tiff", 
+       plot = example_keyness, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 7,
+       dpi = 300)
 
+ggsave("plot_keyness-s.tiff", 
+       plot = example_keyness, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 7,
+       dpi = 100)
 

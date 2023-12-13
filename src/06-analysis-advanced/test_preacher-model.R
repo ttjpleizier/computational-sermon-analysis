@@ -52,30 +52,44 @@ rownames(predict_df) <- NULL
 # plot spurgeon/newman dispersion through the sermons
 
 # info on archbischops: https://en.wikipedia.org/wiki/List_of_archbishops_of_Canterbury
-predict_df$preacher_info[str_starts(predict_df$preacher, "ramsey")] <- "1961-1974 Michael Ramsey"
-predict_df$preacher_info[str_starts(predict_df$preacher, "carey")] <- "1991-2002 George Carey"
-predict_df$preacher_info[str_starts(predict_df$preacher, "williams")] <- "2002-2012 Rowan Williams"
-predict_df$preacher_info[str_starts(predict_df$preacher, "welby")] <- "2013- Justin Welby"
+predict_df$preacher_info[str_starts(predict_df$preacher, "ramsey")] <- "1968 Michael Ramsey (1961-1974)"
+predict_df$preacher_info[str_starts(predict_df$preacher, "carey")] <- "1998 George Carey (1991-2002)"
+predict_df$preacher_info[str_starts(predict_df$preacher, "williams")] <- "2012 Rowan Williams (2002-2012)"
+predict_df$preacher_info[str_starts(predict_df$preacher, "welby")] <- "2022 Justin Welby (2013-)"
 
 
 predict_lambeth <- predict_df
 save(predict_lambeth, file = here("gen","predict_lambeth"))
 
-
 plot_lambeth <- ggplot(predict_lambeth) +
   geom_tile(aes(y = preacher, 
                 x = time, 
                 fill = predicted_class, 
-                height = 0.5),
+                height = .75),
             color = "white") +
   facet_wrap(~ preacher_info, scales = "free_y", ncol = 1) +
-  xlab(paste0("time (x ",chunk_size-chunk_overlap," tokens)")) + 
+  xlab(paste0("sermon length (x ",chunk_size-chunk_overlap," tokens)")) + 
   theme(panel.background = element_blank(),
         panel.grid.major.x = element_line(colour = "grey80", linetype = "dotted"), 
         legend.position = "bottom",
         axis.ticks.y = element_blank(),
-        axis.text.y = element_blank()) +
-  #scale_fill_manual(values = c(kleurja, kleurnee)) +
+        axis.text.y = element_blank(),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(hjust = 0)) +
+  scale_fill_manual(values = c("#606060","#B0B0B0")) +
   scale_x_continuous(breaks = c(1, seq(10,max(predict_lambeth$time),10))) +
   ylab("")
 
+ggsave("plot_lambeth.tiff", 
+       plot = plot_lambeth, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 300)
+
+ggsave("plot_lambeth-s.tiff", 
+       plot = plot_lambeth, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 100)
