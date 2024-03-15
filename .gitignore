@@ -2,6 +2,7 @@
 
 !*/
 !.gitignore
+!csa.Rproj
 !data/*.csv
 !data/*.txt
 !src/01-fetch/**
