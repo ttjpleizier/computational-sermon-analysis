@@ -1,32 +1,38 @@
 # exploratory data analysis
 # Theo Pleizier, 5-12-2023
-# scrip belongs to computational sermon analysis
+# script belongs to computational sermon analysis, section 5.1
+# Note: the script contains more analyses than presented in the paper
 
+# load packages
 library(here)
 library(stringr)
-library(quanteda)
+library(quanteda) # package for quantitative linguistics
 library(quanteda.textplots)
 library(quanteda.textstats)
-library(tidyverse)
+library(tidyverse) # package for data analysis 
 
-load(here("gen","newman_corpus"))
+# test if corpora exist and load corpora
+if(!file.exists(here("gen","spurgeon_corpus"))) source(here("src/04-corpus","spurgeon_corpus.R"))
 load(here("gen","spurgeon_corpus"))
+
+if(!file.exists(here("gen","newman_corpus"))) source(here("src/04-corpus","newman_corpus.R"))
+load(here("gen","newman_corpus"))
+
+if(!file.exists(here("gen","balanced_texts_corpus"))) source(here("src/04-corpus","balanced_corpus.R"))
 load(here("gen","balanced_sample_corpus"))
 
-# distribution biblical texts
+# select most preached chapters from Spurgeon
 
 spurgeon_texts <- sort(table(spurgeon_corpus$scripture),decreasing = TRUE)
-spurgeon_chapters <- sort(table(str_remove(spurgeon_corpus$scripture,":.*$")),decreasing = TRUE)
-
-top5_spurgeon_texts <- spurgeon_texts[spurgeon_texts > 4]
-top_spurgeon_chapters <- spurgeon_chapters[spurgeon_chapters > 19]
+top_spurgeon_texts <- spurgeon_texts[spurgeon_texts > 4] # 5 sermons per biblical text or more
+top_spurgeon_chapters <- spurgeon_chapters[spurgeon_chapters > 19] # 20 sermons per biblical chapter or more
 
 most_preached <- data.frame(top_spurgeon_chapters)
 names(most_preached) <- c("chapter","freq")
 
-# length of sermons over time
+# calculate the length of sermons over time
 
-# corpus to tibble
+# convert corpus objects to tibble (tidyverse object)
 newman <- summary(newman_corpus, n = Inf)
 newman <- as_tibble(newman)
 newman$preacher <- "newman"
@@ -37,9 +43,9 @@ spurgeon$preacher <- "spurgeon"
 spurgeon$weekday <- !is.na(spurgeon$weekday) # dichotomized: T/F weekdays
 spurgeon$readonly <- !is.na(spurgeon$read) & is.na(spurgeon$year) # 63 sermons only read, not delivered?
 
-# explore dates spurgeon: read and/or delivered
+# explore metadata spurgeon: dates of read and/or delivered sermons
+# save the list of sermons for later use, e.g. to check and perhaps repair the dataset
 spurgeon %>% 
-  #filter(xor(is.na(read),is.na(delivered))) %>% 
   filter(is.na(delivered) & !is.na(year)) %>% 
   select(Text,year,delivered,read,sunday)
 
@@ -69,14 +75,14 @@ nrow(spurgeon[spurgeon$weekday,]) # 516 sermons on a weekday
 nrow(spurgeon[!spurgeon$sunday,]) # 1185 sermons without sunday
 
 # given the complexity of sermon dates in Spurgeon we use
-# readr: for sermons that are read
+# read: for sermons that are read
 # delivered: for sermons with a date of delivery
 # published: for all other sermons, fall back on date of printing
 
 
 sum(is.na(spurgeon$delivered) & is.na(spurgeon$read))
 # sermons without delivery data or date of reading: 618
-# these sermons are filtered from the corpus
+# these sermons are removed from the corpus
 
 spurgeon <- filter(spurgeon, !is.na(delivered) | !is.na(read))
 # left in the corpus: 2898 sermons with date of delivery or date of reading
@@ -86,6 +92,7 @@ spurgeon <- filter(spurgeon, !is.na(delivered) | !is.na(read))
 
 sermons <- select(spurgeon, preacher, Tokens, nr, delivered, read, weekday, readonly)
 
+# plot difference in length (Tokens) between read/delivered sermons by Spurgeon
 sermons %>% 
   filter(preacher == "spurgeon") %>% 
   pivot_longer(cols = c("delivered","read"),
@@ -97,6 +104,8 @@ sermons %>%
   geom_point(aes(color = communication), alpha = .2) +
   xlab("")
 
+# boxplots to show the central tendencies in the two modes of communication
+# result of the plot: delivered sermons are considerably longer
 sermons %>% 
   mutate(delivered = str_extract(delivered, "^\\d{4}")) %>% 
   filter(preacher == "spurgeon") %>% 
@@ -105,23 +114,26 @@ sermons %>%
                values_to = "date",
                values_drop_na = TRUE) %>% 
   ggplot(aes(x = communication, y = Tokens)) +
+  xlab("mode of communication") +
   geom_boxplot() 
 
-# plot shows that sermons that were read, were considerably shorter
 
-# mean length per year
-newman_small <- newman %>% 
+# calculate mean sermon-length per year of both preachers
+
+# create a combined dataset with a selected number of variables
+newman_selection <- newman %>% 
   select(preacher, Tokens, nr, delivered = year) %>% 
   mutate(read = NA)
 
-spurgeon_small <- spurgeon %>% 
+spurgeon_selection <- spurgeon %>% 
   select(preacher, Tokens, nr, delivered, read) %>% 
   mutate(delivered = as.numeric(str_extract(delivered, "^\\d{4}"))) %>% 
   mutate(read = as.numeric(str_extract(read, "^\\d{4}")))
 
 
-sermons <- bind_rows(newman_small,spurgeon_small)
+sermons <- bind_rows(newman_selection,spurgeon_selection)
 
+# define plot to project the mean length of the sermons of both preachers over time
 plot_sermon_length <- sermons %>% 
   pivot_longer(cols = c("delivered","read"),
                names_to = "communication",
@@ -137,6 +149,9 @@ plot_sermon_length <- sermons %>%
   ylab("mean length in Tokens") +
   xlab("") 
 
+plot_sermon_length
+
+# save plot
 ggsave("plot_sermon_length.tiff", 
        plot = plot_sermon_length, 
        path = here("gen/images"), 
@@ -156,18 +171,20 @@ ggsave("plot_sermon_length-s.tiff",
 
 table(newman$year)
 
-# lexical dispersion
+# calculate and plot lexical dispersion
 
+# select terms for lexical dispersion
 term_newman <- c("church","world")
 
-set.seed(20231208)
+set.seed(20231208) # set seed for reproducable sample
 tokens_newman <- tokens(corpus_sample(newman_corpus, size = 5, replace = FALSE))
 
+# plot dispersion (quanteda package: textplot_xray)
 example_dispersion <- textplot_xray(kwic(tokens_newman, pattern = term_newman)) +
   ggtitle(paste("Lexical dispersion of <",paste0(term_newman, collapse = "|"),"> in Newman's sermons")) +
-  #ggtitle("") +
   ylab("")
 
+# save plot
 ggsave("plot_dispersion.tiff", 
        plot = example_dispersion, 
        path = here("gen/images"), 
@@ -182,7 +199,9 @@ ggsave("plot_dispersion-s.tiff",
        height = 4,
        dpi = 100)
 
-# keyness
+# calculate and plot keyness
+
+# tokenize balanced corpus 
 
 sermons_tokens <- tokens(balanced_sample, 
                          include_docvars = TRUE, 
@@ -191,15 +210,21 @@ sermons_tokens <- tokens(balanced_sample,
                          remove_symbols = TRUE)
 
 keyness_tokens <- sermons_tokens
-keyness_tokens <- tokens_compound(keyness_tokens, pattern = phrase(c("i am","jesus christ", 
-                                                                     "state of", "st *")))
 
+# combine tokens that re-occur in fixed patterns
+keyness_tokens <- tokens_compound(keyness_tokens, 
+                                  pattern = phrase(c("i am","jesus christ",
+                                                     "state of", "st *")))
+
+# create document feature matrix
 keyness_dfm <- dfm_group(dfm(keyness_tokens), groups = preacher)
 
+# calculate keyness
 keyness_newman <- keyness_dfm %>% 
   textstat_keyness(target = "newman",
                    measure = "chi2")
 
+# plot keyness
 example_keyness <- keyness_newman %>% 
   textplot_keyness(n = 20,
                    color = c("#808080","#D3D3D3")) +
@@ -213,6 +238,7 @@ example_keyness <- keyness_newman %>%
 
 example_keyness
 
+# save plot
 ggsave("plot_keyness.tiff", 
        plot = example_keyness, 
        path = here("gen/images"), 

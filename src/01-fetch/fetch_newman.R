@@ -2,6 +2,7 @@
 # Theo Pleizier, (20-3-2023) 4-12-2023
 # script belongs to project 'computational sermon analysis'
 
+# load packages
 library(here)
 library(rvest)
 library(stringr)

@@ -5,34 +5,40 @@
 # section 2: digital theology & sermon analysis
 
 
+# load libraries
 library(here)
 library(stringr)
 library(dplyr)
-library(quanteda)
+library(quanteda) # the package for quantitative linguistics
 library(quanteda.textstats)
 
-# load balanced corpus
-# check existence of file (pipeline)
+# check existence of corpus files (previous pipeline)
+if(!file.exists(here("gen","newman_corpus"))) source(here("src/04-corpus","newman_corpus.R"))
+if(!file.exists(here("gen","balanced_texts_corpus"))) source(here("src/04-corpus","balanced_corpus.R"))
+
+# load corpora
 load(here("gen","balanced_texts_corpus"))
 load(here("gen","balanced_sample_corpus"))
 load(here("gen","newman_corpus"))
 
 balanced_corpus <- balanced_texts
 
-# create token and dfm objects
+# create token and dfm objects from balanced corpus
 balanced_tokens <- tokens(balanced_corpus, 
                           remove_punct = TRUE, remove_numbers = TRUE)
 
 balanced_dfm <- dfm(balanced_tokens)
 
-set.seed(20231130)
+set.seed(20231130) 
 example_dfm <- balanced_dfm[sample(1:length(balanced_corpus),5),10:19]
 
 
 # calculate top_nr features, multiple combinations
-top_nr <- 15
-balanced_topfeatures <- topfeatures(balanced_dfm, n = top_nr)
-balanced_nostop_topfeatures <- topfeatures(dfm_remove(balanced_dfm, stopwords("en")), n = top_nr)
+top_nr <- 15 
+balanced_topfeatures <- topfeatures(balanced_dfm, 
+                                    n = top_nr)
+balanced_nostop_topfeatures <- topfeatures(dfm_remove(balanced_dfm, stopwords("en")), 
+                                           n = top_nr)
 group_topfeatures <- topfeatures(dfm_remove(balanced_dfm, 
                                             c(stopwords("en"),
                                               names(balanced_nostop_topfeatures))),
@@ -48,24 +54,22 @@ top_words <- data.frame(all = names(balanced_topfeatures),
 
 top_words
 
-
-
-# compounds 'st'
+# Newman often uses the prefix 'st' in his sermons to refer to St. Paul etc. 
+# create table with compounds with prefix 'st'
 
 st_tokens <- tokens_compound(tokens_subset(balanced_tokens, preacher == "newman"), 
                              pattern = phrase(c("st *")))
-st_s <- featnames(dfm_select(dfm(st_tokens), pattern = "st_.*'s$", valuetype = "regex"))
+st_s <- featnames(dfm_select(dfm(st_tokens), 
+                             pattern = "st_.*'s$", 
+                             valuetype = "regex"))
 st_no.s <- str_remove(st_s, "'s$") 
 st_tokens <- tokens_replace(st_tokens, pattern = st_s, replacement = st_no.s)
-
 st_freq <- textstat_frequency(dfm_keep(dfm(st_tokens), pattern = "st_*"))
 
 example_st <- head(st_freq, n = 5)
 
-# collocations god's
+# create collocations from Newman's sermons: combinations with "god's"
 
-
-#newman_coll <- textstat_collocations(tokens_subset(balanced_tokens, preacher == "newman"), size = 2, min_count = 2)
 newman_tokens <- tokens(newman_corpus,
                         remove_punct = TRUE,
                         remove_numbers = TRUE,
@@ -77,15 +81,13 @@ example_coll <- head(newman_coll_str[order(newman_coll_str$count, decreasing = T
 
 example_coll
 
-# keyword in context
+# example of keyword in context (concordance)
+
+keyphrase <- "God's grace"
 
 set.seed(20231130)
-#example_kwic <- tokens_subset(balanced_tokens, preacher == "newman") %>% 
-#  kwic(pattern = phrase("God's grace")) %>% 
-#  sample_n(5)
-
 example_kwic <- newman_tokens %>% 
-  kwic(pattern = phrase("God's grace")) %>% 
+  kwic(pattern = phrase(keyphrase)) %>% # see https://quanteda.io/articles/pkgdown/examples/phrase.html
   sample_n(5)
 
 example_kwic

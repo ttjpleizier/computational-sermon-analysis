@@ -8,6 +8,7 @@
 # txt: https://ccel.org/ccel/s/spurgeon/sermons15/cache/sermons15.txt
 # script only downloads the txt-files 
 
+# load packages
 library(here)
 library(curl) # library to download files from online repositories
 library(stringr)

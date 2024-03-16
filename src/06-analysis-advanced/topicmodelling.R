@@ -2,11 +2,13 @@
 # Theo Pleizier, 7-12-2023
 # belongs to project computational sermon analysis
 
+# load packages
 library(here)
 library(quanteda)
 library(seededlda)
 library(stringr)
 
+# test if corpus exists and load corpus
 if(!file.exists(here("gen","spurgeon_corpus"))) source(here("src/04-corpus","spurgeon_corpus.R"))
 load(here("gen","spurgeon_corpus"))
 
@@ -40,7 +42,7 @@ dfmat_books <- dfm(toks_books) %>%
 
 # fit model
 set.seed(231117)
-tmod_lda_books <- textmodel_lda(dfmat_books, k = 13)
+tmod_lda_books <- textmodel_lda(dfmat_books, k = 13) # from quanteda package
 
 # explore topics
 terms(tmod_lda_books, 10)
@@ -48,6 +50,7 @@ terms(tmod_lda_books, 10)
 dfmat_books$topic <- topics(tmod_lda_books) # add topics to documents as docvar
 table(dfmat_books$scripture_chapter,dfmat_books$topic)
 
+# save model with topics to a file
 save(tmod_lda_books, dfmat_books, file = here("gen","topicmodel"))
 
 
