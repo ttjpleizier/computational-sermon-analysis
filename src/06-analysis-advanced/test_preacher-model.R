@@ -17,7 +17,6 @@ if(!file.exists(here("gen",model_name))) source(here("src/06-analysis-advanced",
 load(file = here("gen",model_name))
 chunk_size <- as.numeric(str_remove(str_extract(model_name,"chunksize\\d{2,3}"),"chunksize"))
 
-
 # laat andere preken
 lambeth_corpus <- readtext::readtext(here("data/testset_lambeth/","*"))
 lambeth_corpus <- corpus(lambeth_corpus)
@@ -45,22 +44,20 @@ predict_df <- as.data.frame(predicted_class)
 
 predict_df$sermon <- rownames(predict_df)
 predict_df$preacher <- str_extract(predict_df$sermon, "^\\w+")
-#predict_df[c("preacher","occasion","year")] <- str_split_fixed(predict_df$preacher, "_",3)
 predict_df$time <- as.integer(str_extract(predict_df$sermon, pattern = "\\d{1,3}$"))
 rownames(predict_df) <- NULL
 
-# plot spurgeon/newman dispersion through the sermons
 
-# info on archbischops: https://en.wikipedia.org/wiki/List_of_archbishops_of_Canterbury
+# add info on archbischops: https://en.wikipedia.org/wiki/List_of_archbishops_of_Canterbury
 predict_df$preacher_info[str_starts(predict_df$preacher, "ramsey")] <- "1968 Michael Ramsey (1961-1974)"
 predict_df$preacher_info[str_starts(predict_df$preacher, "carey")] <- "1998 George Carey (1991-2002)"
 predict_df$preacher_info[str_starts(predict_df$preacher, "williams")] <- "2012 Rowan Williams (2002-2012)"
 predict_df$preacher_info[str_starts(predict_df$preacher, "welby")] <- "2022 Justin Welby (2013-)"
 
-
 predict_lambeth <- predict_df
 save(predict_lambeth, file = here("gen","predict_lambeth"))
 
+# plot spurgeon/newman dispersion through the sermons
 plot_lambeth <- ggplot(predict_lambeth) +
   geom_tile(aes(y = preacher, 
                 x = time, 
@@ -76,20 +73,33 @@ plot_lambeth <- ggplot(predict_lambeth) +
         axis.text.y = element_blank(),
         strip.background = element_rect(fill = "white"),
         strip.text = element_text(hjust = 0)) +
-  scale_fill_manual(values = c("#606060","#B0B0B0")) +
   scale_x_continuous(breaks = c(1, seq(10,max(predict_lambeth$time),10))) +
   ylab("")
 
+plot_lambeth_gray <- plot_lambeth +
+  scale_fill_manual(values = c("#606060","#B0B0B0")) 
+
 ggsave("plot_lambeth.tiff", 
-       plot = plot_lambeth, 
+       plot = plot_lambeth_gray, 
        path = here("gen/images"), 
        width = 6,
        height = 4,
-       dpi = 300)
+       dpi = 600)
 
 ggsave("plot_lambeth-s.tiff", 
-       plot = plot_lambeth, 
+       plot = plot_lambeth_gray, 
        path = here("gen/images"), 
        width = 6,
        height = 4,
        dpi = 100)
+
+plot_lambeth_color <- plot_lambeth +
+  scale_fill_manual(values = c("#5D3A9B","#E66100")) 
+
+ggsave("plot_lambeth_color.tiff", 
+       plot = plot_lambeth_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 600)
+

@@ -60,10 +60,12 @@ sample_medians
 
 # top and tail of median
 
+medians_wide <- medians_wide %>% arrange(difference) %>% mutate(sermon = row_number())
+
 toptail_medians <- rbind(slice_min(medians_wide, order_by = difference, n = 3),
-      slice_max(medians_wide, order_by = difference, n = 3)) %>% 
+                         slice_max(medians_wide, order_by = difference, n = 3)) %>% 
   arrange(difference) %>% 
-  select(-newton_target)
+  select(sermon, bible, newman, spurgeon, difference)
   
 toptail_medians
 
@@ -104,7 +106,7 @@ plot_least_similar <- df %>%
   ggplot(aes(y = sentimentai, x = seg_id, 
              group = bible, fill = preacher)) +
   geom_col() +
-  scale_fill_manual(values = c("#606060","#606060")) +
+  #scale_fill_manual(values = c("#606060","#606060")) +
   #facet_grid(vars(bible), vars(preacher), scales = "free_x") +
   facet_wrap(~ preacher, scales = "free_x", ncol = 1) +
   labs(y = "sentiment.ai score", 
@@ -114,17 +116,30 @@ plot_least_similar <- df %>%
 
 plot_least_similar 
 
+plot_least_similar_gray <- plot_least_similar +
+  scale_fill_manual(values = c("#606060","#606060"))
+
 ggsave("plot_sentiments.tiff", 
-       plot = plot_least_similar, 
+       plot = plot_least_similar_gray, 
        path = here("gen/images"), 
        width = 6,
        height = 4,
-       dpi = 300)
+       dpi = 600)
 
 ggsave("plot_sentiments-s.tiff", 
-       plot = plot_least_similar, 
+       plot = plot_least_similar_gray, 
        path = here("gen/images"), 
        width = 6,
        height = 4,
        dpi = 100)
+
+plot_least_similar_color <- plot_least_similar +
+  scale_fill_manual(values = c("#5D3A9B","#E66100"))
+
+ggsave("plot_sentiments_color.tiff", 
+       plot = plot_least_similar_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 600)
 

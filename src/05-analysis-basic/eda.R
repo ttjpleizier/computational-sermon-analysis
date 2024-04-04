@@ -11,6 +11,10 @@ library(quanteda.textplots)
 library(quanteda.textstats)
 library(tidyverse) # package for data analysis 
 
+# plots in color used contrasts that work for colorblindness
+# https://davidmathlogic.com/colorblind/
+# orange (#E66100) and purple (#5D3A9B)
+
 # test if corpora exist and load corpora
 if(!file.exists(here("gen","spurgeon_corpus"))) source(here("src/04-corpus","spurgeon_corpus.R"))
 load(here("gen","spurgeon_corpus"))
@@ -22,8 +26,10 @@ if(!file.exists(here("gen","balanced_texts_corpus"))) source(here("src/04-corpus
 load(here("gen","balanced_sample_corpus"))
 
 # select most preached chapters from Spurgeon
-
 spurgeon_texts <- sort(table(spurgeon_corpus$scripture),decreasing = TRUE)
+spurgeon_chapters <- str_remove(spurgeon_corpus$scripture, ":.*$")
+spurgeon_chapters <- sort(table(spurgeon_chapters), decreasing = TRUE)
+
 top_spurgeon_texts <- spurgeon_texts[spurgeon_texts > 4] # 5 sermons per biblical text or more
 top_spurgeon_chapters <- spurgeon_chapters[spurgeon_chapters > 19] # 20 sermons per biblical chapter or more
 
@@ -134,14 +140,16 @@ spurgeon_selection <- spurgeon %>%
 sermons <- bind_rows(newman_selection,spurgeon_selection)
 
 # define plot to project the mean length of the sermons of both preachers over time
-plot_sermon_length <- sermons %>% 
+sermons_length <- sermons %>% 
   pivot_longer(cols = c("delivered","read"),
                names_to = "communication",
                values_to = "date",
                values_drop_na = TRUE) %>% 
   select(preacher, Tokens, date) %>% 
   group_by(preacher, date) %>% 
-  summarize(mean_tokens = round(mean(Tokens),0)) %>% 
+  summarize(mean_tokens = round(mean(Tokens),0)) 
+
+plot_sermon_length <- sermons_length %>% 
   ggplot(aes(x = date, y = mean_tokens)) +
   geom_point() +
   geom_line() + 
@@ -157,7 +165,7 @@ ggsave("plot_sermon_length.tiff",
        path = here("gen/images"), 
        width = 6,
        height = 3,
-       dpi = 300)
+       dpi = 600)
 
 ggsave("plot_sermon_length-s.tiff", 
        plot = plot_sermon_length, 
@@ -165,6 +173,19 @@ ggsave("plot_sermon_length-s.tiff",
        width = 6,
        height = 3,
        dpi = 100)
+
+plot_sermon_length_color <- plot_sermon_length +
+  aes(color = preacher) +
+  scale_color_manual(values = c("#5D3A9B","#E66100")) + 
+  theme(legend.position = "none")
+  
+ggsave("plot_sermon_length_color.tiff", 
+       plot = plot_sermon_length_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 3,
+       dpi = 600)
+
 
 # 1834 increase in Newman: July 1833 return from tour Europe (Dec 1832); start Oxford movement?
 # 1891 decrease in Spurgeon: illness & death
@@ -180,8 +201,9 @@ set.seed(20231208) # set seed for reproducable sample
 tokens_newman <- tokens(corpus_sample(newman_corpus, size = 5, replace = FALSE))
 
 # plot dispersion (quanteda package: textplot_xray)
-example_dispersion <- textplot_xray(kwic(tokens_newman, pattern = term_newman)) +
-  ggtitle(paste("Lexical dispersion of <",paste0(term_newman, collapse = "|"),"> in Newman's sermons")) +
+example_dispersion <- textplot_xray(kwic(tokens_newman, pattern = term_newman), sort = TRUE) +
+  #ggtitle(paste("Lexical dispersion of <",paste0(term_newman, collapse = "|"),"> in Newman's sermons")) +
+  ggtitle("") +
   ylab("")
 
 # save plot
@@ -190,7 +212,7 @@ ggsave("plot_dispersion.tiff",
        path = here("gen/images"), 
        width = 6,
        height = 4,
-       dpi = 300)
+       dpi = 600)
 
 ggsave("plot_dispersion-s.tiff", 
        plot = example_dispersion, 
@@ -198,6 +220,18 @@ ggsave("plot_dispersion-s.tiff",
        width = 6,
        height = 4,
        dpi = 100)
+
+example_dispersion_color <- example_dispersion + 
+  aes(color = keyword) +
+  scale_color_manual(values = c("#E66100","#5D3A9B"))
+
+ggsave("plot_dispersion_color.tiff", 
+       plot = example_dispersion_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 600)
+
 
 # calculate and plot keyness
 
@@ -244,7 +278,7 @@ ggsave("plot_keyness.tiff",
        path = here("gen/images"), 
        width = 6,
        height = 7,
-       dpi = 300)
+       dpi = 600)
 
 ggsave("plot_keyness-s.tiff", 
        plot = example_keyness, 
@@ -253,3 +287,23 @@ ggsave("plot_keyness-s.tiff",
        height = 7,
        dpi = 100)
 
+# plot keyness color
+example_keyness_color <- keyness_newman %>% 
+  textplot_keyness(n = 20, color = c("#5D3A9B", "#E66100")) +
+  ggplot2::labs(x = "keyness (chi2)") +
+  theme(
+    legend.position = c(.25, .95),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6)
+  )
+
+example_keyness_color
+
+# save plot
+ggsave("plot_keyness-color.tiff", 
+       plot = example_keyness_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 7,
+       dpi = 600)

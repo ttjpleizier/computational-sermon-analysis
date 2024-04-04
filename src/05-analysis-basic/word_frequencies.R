@@ -34,7 +34,7 @@ example_dfm <- balanced_dfm[sample(1:length(balanced_corpus),5),10:19]
 
 
 # calculate top_nr features, multiple combinations
-top_nr <- 15 
+top_nr <- 20 
 balanced_topfeatures <- topfeatures(balanced_dfm, 
                                     n = top_nr)
 balanced_nostop_topfeatures <- topfeatures(dfm_remove(balanced_dfm, stopwords("en")), 
