@@ -1,1 +1,1 @@
-The project 'Computational Sermon Analysis' is documented as Open Science Framework project: https://osf.io/4a2yz/ (currently set private). See the temporary view-only link: https://osf.io/4a2yz/?view_only=15884e36638b4064b4642024f90ee01a.
+The project 'Computational Sermon Analysis' is documented as Open Science Framework project: https://osf.io/4a2yz/ (currently set private). 
