@@ -15,9 +15,7 @@ library(stringr)
 
 # construct urls to download the 63 volumes with sermons
 spurgeonurl <- "https://ccel.org/ccel/s/spurgeon/sermons"
-volumes <- as.character(1:63)
-volumes <- paste0("0",volumes)
-volumes <- str_sub(volumes, start = nchar(volumes)-1)
+volumes <- sprintf("%02d", 1:63)
 
 spurgeonurls <- paste0(spurgeonurl,volumes)
 spurgeonurls_txt <- paste0(spurgeonurls,"/cache/sermons",volumes,".txt")
