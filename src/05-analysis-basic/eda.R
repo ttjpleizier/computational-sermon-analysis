@@ -186,6 +186,13 @@ ggsave("plot_sermon_length_color.tiff",
        height = 3,
        dpi = 600)
 
+ggsave("plot_sermon_length_color_s.png", 
+       plot = plot_sermon_length_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 3,
+       dpi = 100)
+
 
 # 1834 increase in Newman: July 1833 return from tour Europe (Dec 1832); start Oxford movement?
 # 1891 decrease in Spurgeon: illness & death
@@ -231,6 +238,13 @@ ggsave("plot_dispersion_color.tiff",
        width = 6,
        height = 4,
        dpi = 600)
+
+ggsave("plot_dispersion_color_s.png", 
+       plot = example_dispersion_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 100)
 
 
 # calculate and plot keyness
@@ -307,3 +321,10 @@ ggsave("plot_keyness-color.tiff",
        width = 6,
        height = 7,
        dpi = 600)
+
+ggsave("plot_keyness-color_s.png", 
+       plot = example_keyness_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 7,
+       dpi = 100)

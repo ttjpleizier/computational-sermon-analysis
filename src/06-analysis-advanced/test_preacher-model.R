@@ -103,3 +103,10 @@ ggsave("plot_lambeth_color.tiff",
        height = 4,
        dpi = 600)
 
+ggsave("plot_lambeth_color_s.png", 
+       plot = plot_lambeth_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 100)
+

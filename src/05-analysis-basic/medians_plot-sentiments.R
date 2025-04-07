@@ -143,3 +143,10 @@ ggsave("plot_sentiments_color.tiff",
        height = 4,
        dpi = 600)
 
+ggsave("plot_sentiments_color_s.png", 
+       plot = plot_least_similar_color, 
+       path = here("gen/images"), 
+       width = 6,
+       height = 4,
+       dpi = 100)
+
