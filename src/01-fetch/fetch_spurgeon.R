@@ -11,7 +11,6 @@
 # load packages
 library(here)
 library(curl) # library to download files from online repositories
-#library(stringr)
 
 # construct urls to download the 63 volumes with sermons
 spurgeonurl <- "https://ccel.org/ccel/s/spurgeon/sermons"
